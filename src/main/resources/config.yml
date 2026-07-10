@@ -1,0 +1,101 @@
+# ============================================
+# UltraAntiCheat - 终极融合反作弊配置
+# 融合 GrimAC + Vulcan + Matrix + NCP + Spartan 核心算法
+# ============================================
+
+enabled: true
+debug: false
+
+# 检测循环间隔 (tick)
+check-interval: 4
+
+# 置信度阈值 (0.0-1.0)，低于此值只记录不惩罚
+confidence-threshold: 0.5
+
+# 违规衰减 (每次检测后乘以此系数，防止累积误报)
+violation-decay: 0.92
+
+# 惩罚配置
+punishment:
+  enabled: true
+  threshold: 5.0           # 累积违规值达到此数值触发惩罚
+  command: "kick %player% &c检测到作弊行为: %check% &7(置信度: %confidence%%)"
+  
+# 告警配置
+alerts:
+  enabled: true
+  prefix: "&7[&bUAC&7] "
+  console: true
+
+# Web 仪表盘
+web-dashboard:
+  enabled: false
+  port: 25586
+
+# 各检测模块配置
+checks:
+  fly:
+    enabled: true
+    max-violation: 15.0
+    offset-threshold: 0.03
+  speed:
+    enabled: true
+    max-violation: 15.0
+    speed-multiplier: 1.5
+  timer:
+    enabled: true
+    max-violation: 15.0
+    ratio-threshold: 1.5
+  killaura:
+    enabled: true
+    max-violation: 15.0
+    gcd-sample-size: 20
+    pattern-threshold: 0.85
+  reach:
+    enabled: true
+    max-violation: 15.0
+    max-reach: 3.15
+    ping-compensation: true
+  autoclicker:
+    enabled: true
+    max-violation: 15.0
+    cps-threshold: 18
+  scaffold:
+    enabled: true
+    max-violation: 15.0
+    rotation-threshold: 2.0
+  phase:
+    enabled: true
+    max-violation: 15.0
+  noslow:
+    enabled: true
+    max-violation: 15.0
+    speed-limit: 0.2
+  velocity:
+    enabled: true
+    max-violation: 15.0
+    ratio-threshold: 0.3
+  badpackets:
+    enabled: true
+    max-violation: 15.0
+    packet-rate-limit: 25
+  groundspoof:
+    enabled: true
+    max-violation: 15.0
+  xray:
+    enabled: true
+    max-violation: 15.0
+    score-threshold: 8
+
+# =============================================
+# 防透视配置
+# =============================================
+xray:
+  # 是否在玩家加入时发送服务器资源包（用于检测玩家是否拒绝）
+  send-resource-pack: false
+  # 资源包URL（留空则不发送）
+  resource-pack-url: ""
+  # 资源包SHA1（留空则不校验）
+  resource-pack-hash: ""
+  # 强制加载资源包 (true = 客户端必须接受才能进入服务器, 1.17+)
+  resource-pack-force: false

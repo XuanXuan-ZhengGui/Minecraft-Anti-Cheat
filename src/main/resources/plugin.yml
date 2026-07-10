@@ -1,0 +1,21 @@
+name: UltraAntiCheat
+main: com.ultracheat.UltraAntiCheat
+version: '${project.version}'
+api-version: '1.13'
+author: UltraTeam
+description: 终极融合反作弊 - 融合多款反作弊核心算法，防住99.99%外挂
+softdepend: [ProtocolLib]
+commands:
+  uac:
+    description: UltraAntiCheat 主命令
+    permission: uac.admin
+permissions:
+  uac.admin:
+    description: UAC 管理员权限
+    default: op
+  uac.alerts:
+    description: 接收违规告警
+    default: op
+  uac.bypass:
+    description: 绕过反作弊检测
+    default: false
