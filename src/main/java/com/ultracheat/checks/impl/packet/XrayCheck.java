@@ -58,7 +58,8 @@ public class XrayCheck extends AbstractCheck implements Listener {
     );
 
     private final Map<UUID, ResourcePackStatus> packStatuses = new ConcurrentHashMap<>();
-    private final Map<UUID, Integer> xrayScores = new ConcurrentHashMap<>();
+    // 使用 double 精度保存分数，避免小数部分丢失
+    private final Map<UUID, Double> xrayScores = new ConcurrentHashMap<>();
     private final Map<UUID, Long> lastXrayFlag = new ConcurrentHashMap<>();
     private final Map<UUID, List<Long>> suspiciousBreakTimes = new ConcurrentHashMap<>();
     private final Map<UUID, Set<String>> exploredLocations = new ConcurrentHashMap<>();
@@ -74,6 +75,7 @@ public class XrayCheck extends AbstractCheck implements Listener {
 
     // ===== 资源包状态追踪 =====
 
+    @EventHandler
     public void onResourcePackStatus(PlayerResourcePackStatusEvent e) {
         UUID uuid = e.getPlayer().getUniqueId();
         switch (e.getStatus()) {
@@ -136,7 +138,7 @@ public class XrayCheck extends AbstractCheck implements Listener {
         Set<String> explored = exploredLocations.computeIfAbsent(
                 p.getUniqueId(), k -> ConcurrentHashMap.newKeySet());
         Location loc = p.getLocation();
-        // 玩家周围 4 格范围内都算"已探索"
+        // 玩家周围 4 格范围内都算"已探索"（注意：此处每次移动会插入大量键，可能造成高内存占用）
         for (int x = -4; x <= 4; x++) {
             for (int y = -4; y <= 4; y++) {
                 for (int z = -4; z <= 4; z++) {
@@ -155,11 +157,11 @@ public class XrayCheck extends AbstractCheck implements Listener {
     @Override
     public CheckResult runCheck(Player p) {
         UUID uuid = p.getUniqueId();
-        int score = xrayScores.getOrDefault(uuid, 0);
+        double score = xrayScores.getOrDefault(uuid, 0.0);
 
         // 自然衰减
         if (score > 0) {
-            score = Math.max(0, score - 1);
+            score = Math.max(0.0, score - 1.0);
             xrayScores.put(uuid, score);
         }
 
@@ -167,7 +169,7 @@ public class XrayCheck extends AbstractCheck implements Listener {
         int threshold = (int) config.getCheckConfig("xray", "score-threshold", 8);
         if (score >= threshold) {
             CheckResult result = fail(p, "透视嫌疑 (累积分数: " + score + ")", 2.0, 0.8);
-            xrayScores.put(uuid, 0);
+            xrayScores.put(uuid, 0.0);
             return result;
         }
 
@@ -230,7 +232,7 @@ public class XrayCheck extends AbstractCheck implements Listener {
         if (System.currentTimeMillis() - last < 3000) return;
         lastXrayFlag.put(uuid, System.currentTimeMillis());
 
-        int score = xrayScores.getOrDefault(uuid, 0);
+        double score = xrayScores.getOrDefault(uuid, 0.0);
         score += amount;
         xrayScores.put(uuid, score);
     }
