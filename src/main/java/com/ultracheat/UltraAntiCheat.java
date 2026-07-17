@@ -51,8 +51,12 @@ public class UltraAntiCheat extends JavaPlugin implements Listener {
         getServer().getPluginManager().registerEvents(this, this);
         new com.ultracheat.listener.PacketListener(this);
 
-        // Register command
-        getCommand("uac").setExecutor(new UACCommand(this));
+        // Register command (防御性检查以避免 NPE)
+        if (getCommand("uac") != null) {
+            getCommand("uac").setExecutor(new UACCommand(this));
+        } else {
+            getLogger().warning("Command 'uac' not found in plugin.yml");
+        }
 
         // Web dashboard
         if (configManager.isWebDashboardEnabled()) {
@@ -100,11 +104,11 @@ public class UltraAntiCheat extends JavaPlugin implements Listener {
         checkManager.registerCheck(new GroundSpoofCheck(this, configManager));
         checkManager.registerCheck(new XrayCheck(this, configManager));
 
-        // Xray 检测需要注册额外事件
-        getServer().getPluginManager().registerEvents(
-                (com.ultracheat.checks.impl.packet.XrayCheck) checkManager.getChecks().stream()
-                        .filter(c -> c instanceof com.ultracheat.checks.impl.packet.XrayCheck)
-                        .findFirst().orElse(null), this);
+        // Xray 检测需要注册额外事件（防止传入 null）
+        checkManager.getChecks().stream()
+                .filter(c -> c instanceof com.ultracheat.checks.impl.packet.XrayCheck)
+                .findFirst()
+                .ifPresent(c -> getServer().getPluginManager().registerEvents((com.ultracheat.checks.impl.packet.XrayCheck) c, this));
     }
 
     private void registerBridges() {
@@ -172,7 +176,9 @@ public class UltraAntiCheat extends JavaPlugin implements Listener {
                     .subtract(e.getDamager().getLocation().toVector());
             expected.setY(0);
             if (expected.lengthSquared() > 0.001) {
-                expected.normalize().multiply(0.4).setY(0.4);
+                // 避免链式调用导致在某些 Bukkit 版本下编译失败（setY 可能返回 void）
+                expected = expected.normalize().multiply(0.4);
+                expected.setY(0.4);
             } else {
                 expected = new Vector(0, 0.4, 0);
             }
