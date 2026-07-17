@@ -7,13 +7,15 @@ import com.ultracheat.player.PlayerData;
 import org.bukkit.entity.Player;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 public class CheckManager {
     private final UltraAntiCheat plugin;
     private final ConfigManager config;
     private final AlertManager alertManager;
     private final PunishmentManager punishmentManager;
-    private final List<Check> checks = new ArrayList<>();
+    // 使用线程安全的集合，注册少、读取多的场景更适合 CopyOnWriteArrayList
+    private final List<Check> checks = new CopyOnWriteArrayList<>();
     private final Map<UUID, PlayerData> playerDataMap = new ConcurrentHashMap<>();
 
     public CheckManager(UltraAntiCheat plugin, ConfigManager config,
